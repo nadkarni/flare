@@ -7,6 +7,7 @@ import android.location.LocationManager;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
+import com.firebase.client.Firebase;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -15,15 +16,26 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.ValueEventListener;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class MapsActivity extends FragmentActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    private Firebase fb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         setUpMapIfNeeded();
+        Firebase.setAndroidContext(this);
+        fb = new Firebase("https://popping-heat-8060.firebaseio.com/");
     }
 
     @Override
@@ -108,7 +120,7 @@ public class MapsActivity extends FragmentActivity {
         }
 
         // Create a LatLng object for the current location
-        LatLng latLng = new LatLng(latitude, longitude);
+        final LatLng latLng = new LatLng(latitude, longitude);
 
         // Show the current location in Google Map
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
@@ -116,13 +128,25 @@ public class MapsActivity extends FragmentActivity {
         // Zoom in the Google Map
         mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
 
+        Firebase postRef = fb.child("posts");
+        Map<String, String> post1 = new HashMap<String, String>();
+        post1.put("author", "gracehop");
+        post1.put("title", "Announcing COBOL, a New Programming Language");
+        postRef.push().setValue(post1);
+        Map<String, String> post2 = new HashMap<String, String>();
+        post2.put("author", "alanisawesome");
+        post2.put("title", "The Turing Machine");
+        postRef.push().setValue(post2);
+
+
+
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
             @Override
             public void onMapClick(LatLng point) {
 
                 mMap.addMarker(new MarkerOptions()
-                        .position(point)
+                        .position(latLng)
                         .title("Event!")
                         .snippet("Get more people to light the flame!")
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_launcher))
